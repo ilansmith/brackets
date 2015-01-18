@@ -1,0 +1,13 @@
+malloc/my_malloc_test
+malloc/quiz/my_malloc_test
+malloc/sys/sys_test
+timers/timers_test
+timers/quiz/timers_test
+library/3.2.1/app
+library/3.2.2/app
+library/3.2.3/app
+*.o
+*.a
+tags
+
+brackets
