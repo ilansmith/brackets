@@ -2,58 +2,57 @@
 #include <stdio.h>
 
 struct bracket {
+	struct bracket *prev;
 	struct bracket *next;
 	char open;
 };
 
-static char blk_open(char sym)
+static int blk_open(char sym)
 {
 	return sym == '(' || sym == '[' || sym == '{';
 }
 
-static char brk_close(char sym)
+static char match_close(char sym)
 {
 	return sym == ')' ? '(' : sym == ']' ? '[' : sym == '}' ? '{' : 0;
 }
 
 static int check(char *text)
 {
-	struct bracket *list = NULL, *tmp;
-	int ret = 0;
+	struct bracket *list = NULL, *cur;
+	int ret = -1;
 
-	for ( ; *text; text++) {
+	for (cur = list; *text; text++) {
 		char open;
 
 		if (blk_open(*text)) {
-			if (!(tmp = (struct bracket *)
-				malloc(sizeof(struct bracket)))) {
-				ret = -1;
-				goto Exit;
+			if (cur == list) {
+				if (!(cur = (struct bracket *)
+					calloc(1, sizeof(struct bracket)))) {
+					goto Exit;
+				}
+				cur->next = list;
+				if (list)
+					list->prev = cur;
+				list = cur;
+			} else {
+				cur = cur->prev;
 			}
-
-			tmp->open = *text;
-			tmp->next = list;
-			list = tmp;
-			continue;
-		}
-
-		if ((open = brk_close(*text))) {
-			if (!list || open != list->open) {
-				ret = -1;
+			cur->open = *text;
+		} else if ((open = match_close(*text))) {
+			if (!cur || open != ((struct bracket *)cur)->open)
 				goto Exit;
-			}
-
-			tmp = list;
-			list = list->next;
-			free(tmp);
+			cur = cur->next;
 		}
 	}
 
+	ret = 0;
+
 Exit:
 	while (list) {
-		tmp = list;
+		cur = list;
 		list = list->next;
-		free(tmp);
+		free(cur);
 	}
 
 	return ret;
